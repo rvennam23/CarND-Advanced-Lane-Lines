@@ -11,6 +11,7 @@ import cv2
 import pickle
 import sys
 from moviepy.editor import VideoFileClip
+import glob
 
 
 # Define a function to threshold an image for a given range and Sobel kernel
@@ -269,6 +270,28 @@ class LaneTracker:
 
         return result
     
+ 
+def pipeline_test():
+    # Read in the saved matrix and distortion coefficients
+    dist_pickle = pickle.load(open('./camera_dist_pickle_notebook.p', 'rb'))
+    mtx = dist_pickle['mtx']
+    dist = dist_pickle['dist']
+
+    # Create LaneTracker object with matrix and distortion coefficients
+    lane_tracker = LaneTracker(mtx, dist)
+
+    images = glob.glob('test_images/*.jpg')
+
+    for idx, fname in enumerate(images):
+        # Read in image
+        img = cv2.imread(fname)
+
+        result = lane_tracker.find_lanes(img)
+
+        write_name = './output_images/test_images/pipeline_output/'+str(idx+1)+'.jpg'
+        cv2.imwrite(write_name, result)
+    
+    
 def main(input_video):
     # Read in the saved matrix and distortion coefficients
     dist_pickle = pickle.load(open('./camera_dist_pickle_notebook.p', 'rb'))
@@ -293,3 +316,5 @@ if __name__=='__main__':
 
     # argv[1] should be name of input video to apply lane lines
     main(sys.argv[1])
+    
+    pipeline_test()
